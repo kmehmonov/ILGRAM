@@ -3914,6 +3914,16 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
     }
 
     public static class MyWebView extends WebView {
+
+        private boolean ilgramBlocked(String url) {
+            if (org.telegram.ilgram.ILGRAMPolicy.isWebViewAllowed() || url == null || url.equals("about:blank")) {
+                return false;
+            }
+            org.telegram.ilgram.ILGRAMPolicy.showBlocked(getContext());
+            super.loadUrl("about:blank");
+            return true;
+        }
+
         private final int tag = tags++;
         private boolean isPageLoaded;
         private Runnable whenPageLoaded;
@@ -5217,6 +5227,7 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
 
         @Override
         public void loadUrl(@NonNull String url) {
+            if (ilgramBlocked(url)) return; // ILGRAM: in-app browser / mini apps disabled
             if (currentSheet != null) {
                 currentSheet.dismiss();
                 currentSheet = null;
@@ -5238,6 +5249,7 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
 
         @Override
         public void loadUrl(@NonNull String url, @NonNull Map<String, String> additionalHttpHeaders) {
+            if (ilgramBlocked(url)) return; // ILGRAM: in-app browser / mini apps disabled
             if (currentSheet != null) {
                 currentSheet.dismiss();
                 currentSheet = null;
@@ -5255,6 +5267,7 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
         }
 
         public void loadUrl(String url, WebMetadataCache.WebMetadata meta) {
+            if (ilgramBlocked(url)) return; // ILGRAM: in-app browser / mini apps disabled
             if (currentSheet != null) {
                 currentSheet.dismiss();
                 currentSheet = null;
@@ -5349,6 +5362,7 @@ public abstract class BotWebViewContainer extends FrameLayout implements Notific
 
         @Override
         public void postUrl(@NonNull String url, @NonNull byte[] postData) {
+            if (ilgramBlocked(url)) return; // ILGRAM: in-app browser / mini apps disabled
             d("postUrl " + url + " " + postData);
             super.postUrl(url, postData);
         }

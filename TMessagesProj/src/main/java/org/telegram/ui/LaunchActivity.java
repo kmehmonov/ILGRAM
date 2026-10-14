@@ -425,9 +425,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                     Uri uri = intent.getData();
                     if (uri != null) {
                         String url = uri.toString().toLowerCase();
-                        isProxy = url.startsWith("tg:proxy") || url.startsWith("tg://proxy")
+                        isProxy = !org.telegram.ilgram.ILGRAMPolicy.isActive() && (url.startsWith("tg:proxy") || url.startsWith("tg://proxy")
                                 || url.startsWith("tg:webproxy") || url.startsWith("tg://webproxy")
-                                || url.startsWith("tg:socks") || url.startsWith("tg://socks");
+                                || url.startsWith("tg:socks") || url.startsWith("tg://socks")); // ILGRAM: no proxy links
                     }
                 }
             }

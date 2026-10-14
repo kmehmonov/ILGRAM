@@ -9,7 +9,7 @@ on:
 
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -49,9 +49,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Unit tests (ILGRAM policy)
-        if: hashFiles('ilgram-policy-tests/**') != ''
-        run: ./gradlew --no-daemon -p ilgram-policy-tests test || (cd ilgram-policy-tests && bash run-tests.sh)
+      - name: Unit tests (ILGRAM policy rules, plain JVM)
+        run: bash ilgram/tests/run-tests.sh
 
       - name: Build APK
         env:
@@ -63,13 +62,20 @@ jobs:
           ILGRAM_KEY_ALIAS: ${{ secrets.ILGRAM_KEY_ALIAS }}
           ILGRAM_KEY_PASSWORD: ${{ secrets.ILGRAM_KEY_PASSWORD }}
         run: |
-          if [ -f ilgram/ci/prepare.sh ]; then bash ilgram/ci/prepare.sh; fi
+          . ilgram/ci/prepare.sh
           ./gradlew --no-daemon --stacktrace :TMessagesProj_App:assembleAfatRelease
           ccache -s || true
+
+      - name: Rename APK
+        run: |
+          APK=$(find TMessagesProj_App/build/outputs/apk -name '*.apk' | head -1)
+          mkdir -p out && cp "$APK" "out/ILGRAM-${{ github.run_number }}.apk"
+          sha256sum out/*.apk | tee out/SHA256SUMS.txt
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs out/*.apk | head -5 || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ILGRAM-apk-${{ github.run_number }}
-          path: TMessagesProj_App/build/outputs/apk/**/*.apk
+          path: out/*
           if-no-files-found: error

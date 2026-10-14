@@ -24,6 +24,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
@@ -112,6 +113,9 @@
         android:enableOnBackInvokedCallback="true"
     >
         <!-- usesCleartextTraffic for browser supporting opening http:// links -->
+
+        <!-- ILGRAM: managed configuration (allowed group / user IDs) pushed by the MDM -->
+        <meta-data android:name="android.content.APP_RESTRICTIONS" android:resource="@xml/ilgram_app_restrictions" />
 
         <activity-alias
             android:enabled="true"
@@ -486,8 +490,8 @@
         <service
             android:name=".NotificationsService"
             android:enabled="true"
-            android:exported="true"
-            android:foregroundServiceType="dataSync"
+            android:exported="false"
+            android:foregroundServiceType="dataSync|remoteMessaging"
         />
         <service
             android:name=".NotificationRepeat"

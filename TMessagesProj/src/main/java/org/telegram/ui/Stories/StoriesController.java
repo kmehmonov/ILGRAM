@@ -247,8 +247,8 @@ public class StoriesController {
     }
 
     public boolean hasStories(long dialogId) {
-        if (dialogId == 0) {
-            return false;
+        if (dialogId == 0 || org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            return false; // ILGRAM: stories are not part of the student UI
         }
         if (hasUploadingStories(dialogId)) {
             return true;
@@ -280,10 +280,16 @@ public class StoriesController {
     }
 
     public boolean hasStories() {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            return false; // ILGRAM
+        }
         return (dialogListStories != null && dialogListStories.size() > 0) || hasSelfStories();
     }
 
     public void loadStories() {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            return; // ILGRAM: do not download stories of other users
+        }
         if (firstLoad) {
             loadingFromDatabase = true;
             storiesStorage.getAllStories(allStories -> {

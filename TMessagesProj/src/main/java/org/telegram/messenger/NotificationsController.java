@@ -1073,7 +1073,8 @@ public class NotificationsController extends BaseController implements Notificat
         });
     }
 
-    public void processNewMessages(ArrayList<MessageObject> messageObjects, boolean isLast, boolean isFcm, CountDownLatch countDownLatch) {
+    public void processNewMessages(ArrayList<MessageObject> messageObjectsIn, boolean isLast, boolean isFcm, CountDownLatch countDownLatch) {
+        final ArrayList<MessageObject> messageObjects = ilgramFilterMessages(messageObjectsIn);
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("NotificationsController: processNewMessages msgs.size()=" + (messageObjects == null ? "null" : messageObjects.size()) + " isLast=" + isLast + " isFcm=" + isFcm + ")");
         }
@@ -1435,7 +1436,8 @@ public class NotificationsController extends BaseController implements Notificat
         return total_unread_count;
     }
 
-    public void processDialogsUpdateRead(LongSparseIntArray dialogsToUpdate) {
+    public void processDialogsUpdateRead(LongSparseIntArray dialogsToUpdateIn) {
+        final LongSparseIntArray dialogsToUpdate = ilgramFilterCounts(dialogsToUpdateIn);
         ArrayList<MessageObject> popupArrayToRemove = new ArrayList<>();
         notificationsQueue.postRunnable(() -> {
             int old_unread_count = total_unread_count;
@@ -1562,10 +1564,64 @@ public class NotificationsController extends BaseController implements Notificat
         });
     }
 
-    public void processLoadedUnreadMessages(LongSparseArray<Integer> dialogs, ArrayList<TLRPC.Message> messages, ArrayList<MessageObject> push, ArrayList<TLRPC.User> users, ArrayList<TLRPC.Chat> chats, ArrayList<TLRPC.EncryptedChat> encryptedChats, Collection<StoryNotification> storyPushes) {
+    // ---- ILGRAM notification filtering: chats hidden in the student UI never notify or count ----
+
+    private ArrayList<MessageObject> ilgramFilterMessages(ArrayList<MessageObject> in) {
+        if (in == null || !org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            return in;
+        }
+        final ArrayList<MessageObject> out = new ArrayList<>(in.size());
+        for (int i = 0; i < in.size(); i++) {
+            final MessageObject m = in.get(i);
+            if (m != null && org.telegram.ilgram.ILGRAMPolicy.shouldShowNotification(currentAccount, m.getDialogId())) {
+                out.add(m);
+            }
+        }
+        return out;
+    }
+
+    private LongSparseIntArray ilgramFilterCounts(LongSparseIntArray in) {
+        if (in == null || !org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            return in;
+        }
+        final LongSparseIntArray out = new LongSparseIntArray();
+        for (int i = 0; i < in.size(); i++) {
+            if (org.telegram.ilgram.ILGRAMPolicy.shouldShowNotification(currentAccount, in.keyAt(i))) {
+                out.put(in.keyAt(i), in.valueAt(i));
+            }
+        }
+        return out;
+    }
+
+    public void processLoadedUnreadMessages(LongSparseArray<Integer> dialogsIn, ArrayList<TLRPC.Message> messagesIn, ArrayList<MessageObject> pushIn, ArrayList<TLRPC.User> users, ArrayList<TLRPC.Chat> chats, ArrayList<TLRPC.EncryptedChat> encryptedChats, Collection<StoryNotification> storyPushes) {
         getMessagesController().putUsers(users, true);
         getMessagesController().putChats(chats, true);
         getMessagesController().putEncryptedChats(encryptedChats, true);
+        final ArrayList<MessageObject> push = ilgramFilterMessages(pushIn);
+        final ArrayList<TLRPC.Message> messages;
+        final LongSparseArray<Integer> dialogs;
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            messages = new ArrayList<>();
+            if (messagesIn != null) {
+                for (int i = 0; i < messagesIn.size(); i++) {
+                    final TLRPC.Message m = messagesIn.get(i);
+                    if (m != null && org.telegram.ilgram.ILGRAMPolicy.shouldShowNotification(currentAccount, MessageObject.getDialogId(m))) {
+                        messages.add(m);
+                    }
+                }
+            }
+            dialogs = new LongSparseArray<>();
+            if (dialogsIn != null) {
+                for (int i = 0; i < dialogsIn.size(); i++) {
+                    if (org.telegram.ilgram.ILGRAMPolicy.shouldShowNotification(currentAccount, dialogsIn.keyAt(i))) {
+                        dialogs.put(dialogsIn.keyAt(i), dialogsIn.valueAt(i));
+                    }
+                }
+            }
+        } else {
+            messages = messagesIn;
+            dialogs = dialogsIn;
+        }
 
         notificationsQueue.postRunnable(() -> {
             pushDialogs.clear();

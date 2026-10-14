@@ -9639,6 +9639,22 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public ArrayList<TLRPC.Dialog> getAllDialogs() {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            // ILGRAM: UI consumers (share sheets, pickers, quick forward, mentions...) only see allowed chats.
+            ArrayList<TLRPC.Dialog> visible = new ArrayList<>(allDialogs.size());
+            for (int i = 0, N = allDialogs.size(); i < N; i++) {
+                TLRPC.Dialog d = allDialogs.get(i);
+                if (org.telegram.ilgram.ILGRAMPolicy.isDialogVisible(currentAccount, d)) {
+                    visible.add(d);
+                }
+            }
+            return visible;
+        }
+        return allDialogs;
+    }
+
+    /** ILGRAM: unfiltered list for internal bookkeeping only. */
+    public ArrayList<TLRPC.Dialog> getAllDialogsInternal() {
         return allDialogs;
     }
 
@@ -22417,6 +22433,9 @@ public class MessagesController extends BaseController implements NotificationCe
                                 dialogId = encryptedChat.user_id;
                             }
                         }
+                        if (!org.telegram.ilgram.ILGRAMPolicy.isDialogVisible(currentAccount, d)) {
+                            continue; // ILGRAM chat filtering
+                        }
                         if (sortingDialogFilter.includesDialog(getAccountInstance(), dialogId, d)) {
                             if (canAddToForward(d)) {
                                 dialogsForward.add(d);
@@ -22438,8 +22457,14 @@ public class MessagesController extends BaseController implements NotificationCe
                 isLeftPromoChannel = false;
             }
         }
+        final boolean ilgram = org.telegram.ilgram.ILGRAMPolicy.isActive();
         for (int a = 0, N = allDialogs.size(); a < N; a++) {
             TLRPC.Dialog d = allDialogs.get(a);
+            if (ilgram && !org.telegram.ilgram.ILGRAMPolicy.isDialogVisible(currentAccount, d)) {
+                // ILGRAM: hidden from every presentation list (chat list, forward, pickers, counters).
+                // The dialog itself stays in allDialogs/dialogs_dict, so sync is untouched.
+                continue;
+            }
             if (d instanceof TLRPC.TL_dialog) {
                 ArrayList<MessageObject> messageObjects = dialogMessage.get(d.id);
                 if (messageObjects != null) {
@@ -22502,7 +22527,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         }
                     }
                 }
-                if (canAddToForward(d) && d.folder_id == 0) {
+                if (canAddToForward(d) && (d.folder_id == 0 || ilgram) && (!ilgram || org.telegram.ilgram.ILGRAMPolicy.canForwardTo(currentAccount, d.id))) {
                     if (d.id == selfId) {
                         dialogsForward.add(0, d);
                         selfAdded = true;
@@ -22528,7 +22553,7 @@ public class MessagesController extends BaseController implements NotificationCe
             }
 
             boolean addToFolder = true;
-            if (addDialogToItsCommunity(d)) {
+            if (!ilgram && addDialogToItsCommunity(d)) {
                 if (ChatObject.isCollapsedInCommunity(currentAccount, d.id)) {
                     addToFolder = false;
                 }
@@ -22539,11 +22564,11 @@ public class MessagesController extends BaseController implements NotificationCe
             }
 
         }
-        if (promoDialog != null && isLeftPromoChannel) {
+        if (promoDialog != null && isLeftPromoChannel && !ilgram) {
             allDialogs.add(0, promoDialog);
             addDialogToItsFolder(-2, promoDialog);
         }
-        if (!selfAdded) {
+        if (!selfAdded && !ilgram) {
             TLRPC.User user = getUserConfig().getCurrentUser();
             if (user != null) {
                 TLRPC.Dialog dialog = new TLRPC.TL_dialog();
@@ -22606,6 +22631,9 @@ public class MessagesController extends BaseController implements NotificationCe
             folderId = 0;
         } else {
             folderId = dialog.folder_id;
+        }
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            folderId = 0; // ILGRAM: no archive in the student UI; allowed archived chats stay visible
         }
         ArrayList<TLRPC.Dialog> dialogs = dialogsByFolder.get(folderId);
         if (dialogs == null) {

@@ -1949,6 +1949,9 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
         boolean preview = params.preview;
         ActionBarPopupWindow.ActionBarPopupWindowLayout menu = params.menuView;
 
+        if (fragment != null && !org.telegram.ilgram.ILGRAMPolicy.checkPresent(fragment)) {
+            return false; // ILGRAM navigation guard
+        }
         if (fragment == null || checkTransitionAnimation() || delegate != null && check && !delegate.needPresentFragment(this, params) || !fragment.onFragmentCreate()) {
             return false;
         }
@@ -2330,6 +2333,9 @@ public class ActionBarLayout extends FrameLayout implements INavigationLayout, F
 
     @Override
     public boolean addFragmentToStack(BaseFragment fragment, int position) {
+        if (fragment != null && !org.telegram.ilgram.ILGRAMPolicy.checkPresent(fragment)) {
+            return false; // ILGRAM navigation guard
+        }
         if (delegate != null && !delegate.needAddFragmentToStack(fragment, this) || !fragment.onFragmentCreate()) {
             return false;
         }

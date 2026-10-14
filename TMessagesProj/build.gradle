@@ -140,12 +140,27 @@ android {
 
         vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 
+        // ILGRAM: school phones are ARM; skipping x86 halves native build time
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+
+        // ILGRAM: Telegram API credentials are injected from the environment (CI secrets), never committed.
+        def ilgramApiId = System.getenv("ILGRAM_API_ID") ?: (project.findProperty("ILGRAM_API_ID") ?: "0")
+        def ilgramApiHash = System.getenv("ILGRAM_API_HASH") ?: (project.findProperty("ILGRAM_API_HASH") ?: "")
+        buildConfigField "int", "ILGRAM_API_ID", (ilgramApiId.toString().trim().isInteger() ? ilgramApiId.toString().trim() : "0")
+        buildConfigField "String", "ILGRAM_API_HASH", "\"" + ilgramApiHash.toString().trim().replaceAll("[^0-9a-fA-F]", "") + "\""
+
         multiDexEnabled true
 
         externalNativeBuild {
             cmake {
                 version '3.22.1'
                 arguments '-DANDROID_STL=c++_static', '-DANDROID_PLATFORM=android-21' //, '-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON'
+                if (System.getenv("ILGRAM_CCACHE") != null) {
+                    // ILGRAM CI: native code is unchanged, ccache makes rebuilds fast
+                    arguments '-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+                }
                 targets 'tmessages.49'
             }
         }

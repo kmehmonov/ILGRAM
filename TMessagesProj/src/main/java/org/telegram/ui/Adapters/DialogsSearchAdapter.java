@@ -1045,7 +1045,7 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
                                     newDialog.flags = ChatObject.isChannel((TLRPC.Chat) obj) ? 1 : 0;
                                 }
                                 MessagesController.getInstance(currentAccount).dialogs_dict.put(finalDialogId, newDialog);
-                                MessagesController.getInstance(currentAccount).getAllDialogs().add(newDialog);
+                                MessagesController.getInstance(currentAccount).getAllDialogsInternal().add(newDialog);
                                 MessagesController.getInstance(currentAccount).sortDialogs(null);
                             }
                         });

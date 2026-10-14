@@ -9,6 +9,16 @@ import org.telegram.messenger.R;
 
 public class LauncherIconController {
     public static void tryFixLauncherIconIfNeeded() {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            // ILGRAM: always the ILGRAM icon (alternative Telegram-branded icons are not used)
+            for (LauncherIcon icon : LauncherIcon.values()) {
+                if (icon != LauncherIcon.DEFAULT && isEnabled(icon)) {
+                    setIcon(LauncherIcon.DEFAULT);
+                    return;
+                }
+            }
+            return;
+        }
         for (LauncherIcon icon : LauncherIcon.values()) {
             if (isEnabled(icon)) {
                 return;
@@ -25,6 +35,9 @@ public class LauncherIconController {
     }
 
     public static void setIcon(LauncherIcon icon) {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            icon = LauncherIcon.DEFAULT; // ILGRAM
+        }
         Context ctx = ApplicationLoader.applicationContext;
         PackageManager pm = ctx.getPackageManager();
         for (LauncherIcon i : LauncherIcon.values()) {

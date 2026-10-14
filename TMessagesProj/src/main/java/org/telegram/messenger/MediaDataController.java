@@ -4983,6 +4983,21 @@ public class MediaDataController extends BaseController {
     //---------------- MEDIA END ----------------
 
     public ArrayList<TLRPC.TL_topPeer> hints = new ArrayList<>();
+
+    /** ILGRAM: suggestion lists (share sheets, quick share, launcher shortcuts) only contain allowed chats. */
+    private ArrayList<TLRPC.TL_topPeer> ilgramFilterPeers(ArrayList<TLRPC.TL_topPeer> peers) {
+        if (peers == null || !org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            return peers;
+        }
+        for (int i = 0; i < peers.size(); i++) {
+            final TLRPC.TL_topPeer p = peers.get(i);
+            if (p == null || p.peer == null || !org.telegram.ilgram.ILGRAMPolicy.canOpenDialog(currentAccount, MessageObject.getPeerId(p.peer))) {
+                peers.remove(i);
+                i--;
+            }
+        }
+        return peers;
+    }
     public ArrayList<TLRPC.TL_topPeer> inlineBots = new ArrayList<>();
     public ArrayList<TLRPC.TL_topPeer> guestBots = new ArrayList<>();
     public ArrayList<TLRPC.TL_topPeer> webapps = new ArrayList<>();
@@ -5004,6 +5019,9 @@ public class MediaDataController extends BaseController {
         ArrayList<TLRPC.TL_topPeer> hintsFinal = new ArrayList<>();
         if (SharedConfig.passcodeHash.length() <= 0) {
             for (int a = 0; a < hints.size(); a++) {
+                if (!org.telegram.ilgram.ILGRAMPolicy.canOpenDialog(currentAccount, MessageObject.getPeerId(hints.get(a).peer))) {
+                    continue; // ILGRAM: launcher/share shortcuts only for allowed chats
+                }
                 hintsFinal.add(hints.get(a));
                 if (hintsFinal.size() == maxShortcuts - 2) {
                     break;
@@ -5247,7 +5265,7 @@ public class MediaDataController extends BaseController {
                         getMessagesController().putChats(chats, true);
                         loading = false;
                         loaded = true;
-                        hints = hintsNew;
+                        hints = ilgramFilterPeers(hintsNew);
                         inlineBots = inlineBotsNew;
                         guestBots = guestsBotsNew;
                         webapps = webappsNew;
@@ -5297,7 +5315,7 @@ public class MediaDataController extends BaseController {
                             guestBots = category.peers;
                             getUserConfig().botGuestRatingLoadTime = time;
                         } else {
-                            hints = category.peers;
+                            hints = ilgramFilterPeers(category.peers);
                             long selfUserId = getUserConfig().getClientUserId();
                             for (int b = 0; b < hints.size(); b++) {
                                 TLRPC.TL_topPeer topPeer = hints.get(b);
@@ -5583,6 +5601,9 @@ public class MediaDataController extends BaseController {
                     }
                 }
                 if (peer == null) {
+                    if (!org.telegram.ilgram.ILGRAMPolicy.canOpenDialog(currentAccount, dialogId)) {
+                        return; // ILGRAM: top peers only contain allowed chats
+                    }
                     peer = new TLRPC.TL_topPeer();
                     peer.peer = new TLRPC.TL_peerUser();
                     peer.peer.user_id = dialogId;

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ILGRAM managed configuration (Android app restrictions) — set by the MDM / Device Owner. -->
+<restrictions xmlns:android="http://schemas.android.com/apk/res/android">
+    <restriction
+        android:key="student_mode_enabled"
+        android:restrictionType="bool"
+        android:defaultValue="true"
+        android:title="@string/IlgramRestrictionStudentMode" />
+    <restriction
+        android:key="allowed_group_ids"
+        android:restrictionType="string"
+        android:title="@string/IlgramRestrictionGroups"
+        android:description="@string/IlgramRestrictionGroupsInfo" />
+    <restriction
+        android:key="allowed_user_ids"
+        android:restrictionType="string"
+        android:title="@string/IlgramRestrictionUsers"
+        android:description="@string/IlgramRestrictionUsersInfo" />
+    <restriction
+        android:key="allow_service_notifications"
+        android:restrictionType="bool"
+        android:defaultValue="true"
+        android:title="@string/IlgramRestrictionServiceNotifications" />
+    <restriction
+        android:key="allow_secret_chats"
+        android:restrictionType="bool"
+        android:defaultValue="false"
+        android:title="@string/IlgramRestrictionSecretChats" />
+    <restriction
+        android:key="help_text"
+        android:restrictionType="string"
+        android:title="@string/IlgramRestrictionHelpText" />
+</restrictions>

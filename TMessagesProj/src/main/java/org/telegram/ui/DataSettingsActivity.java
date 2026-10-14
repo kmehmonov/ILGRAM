@@ -194,9 +194,15 @@ public class DataSettingsActivity extends BaseFragment {
         useLessDataForCallsRow = rowCount++;
 //        quickRepliesRow = rowCount++;
         callsSection2Row = rowCount++;
-        proxySectionRow = rowCount++;
-        proxyRow = rowCount++;
-        proxySection2Row = rowCount++;
+        if (org.telegram.ilgram.ILGRAMPolicy.isSettingVisible(org.telegram.ilgram.ILGRAMRules.SETTING_PROXY)) {
+            proxySectionRow = rowCount++;
+            proxyRow = rowCount++;
+            proxySection2Row = rowCount++;
+        } else {
+            proxySectionRow = -1; // ILGRAM: proxy settings hidden
+            proxyRow = -1;
+            proxySection2Row = -1;
+        }
         clearDraftsRow = rowCount++;
         clearDraftsSectionRow = rowCount++;
 

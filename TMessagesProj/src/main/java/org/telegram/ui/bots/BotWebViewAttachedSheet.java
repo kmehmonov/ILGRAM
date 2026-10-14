@@ -1369,6 +1369,10 @@ public class BotWebViewAttachedSheet implements NotificationCenter.NotificationC
         show(lowBounce, false);
     }
     public void show(boolean lowBounce, boolean instant) {
+        if (!org.telegram.ilgram.ILGRAMPolicy.isWebViewAllowed()) {
+            org.telegram.ilgram.ILGRAMPolicy.showBlocked(getContext());
+            return; // ILGRAM: Telegram Mini Apps / Web Apps disabled
+        }
         if (!AndroidUtilities.isSafeToShow(getContext())) return;
 
         windowView.setAlpha(0f);

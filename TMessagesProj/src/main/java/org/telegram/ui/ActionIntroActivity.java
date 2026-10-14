@@ -77,6 +77,11 @@ public class ActionIntroActivity extends BaseFragment implements LocationControl
 
     @ActionType
     private final int currentType;
+
+    /** ILGRAM: lets ILGRAMPolicy recognise QR-login / channel-creation intros. */
+    public int getActionType() {
+        return currentType;
+    }
     private boolean flickerButton;
 
     private String currentGroupCreateAddress;

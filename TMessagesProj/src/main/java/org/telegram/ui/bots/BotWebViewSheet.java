@@ -2001,6 +2001,10 @@ public class BotWebViewSheet extends Dialog implements NotificationCenter.Notifi
 
     @Override
     public void show() {
+        if (!org.telegram.ilgram.ILGRAMPolicy.isWebViewAllowed()) {
+            org.telegram.ilgram.ILGRAMPolicy.showBlocked(getContext());
+            return; // ILGRAM: Telegram Mini Apps / Web Apps disabled
+        }
         if (!AndroidUtilities.isSafeToShow(getContext())) return;
         setOpen(true);
         windowView.setAlpha(0f);

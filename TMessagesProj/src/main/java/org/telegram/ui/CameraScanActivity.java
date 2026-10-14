@@ -186,6 +186,10 @@ public class CameraScanActivity extends BaseFragment {
         if (parentActivity == null) {
             return null;
         }
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            org.telegram.ilgram.ILGRAMPolicy.showBlocked(parentActivity); // ILGRAM: QR login / scanner disabled
+            return null;
+        }
         INavigationLayout[] actionBarLayout = new INavigationLayout[]{INavigationLayout.newLayout(parentActivity, false)};
         BottomSheet bottomSheet = new BottomSheet(parentActivity, false) {
             CameraScanActivity fragment;

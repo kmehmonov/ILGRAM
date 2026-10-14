@@ -103,8 +103,14 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     private static final int INDEX_PROFILE = 4;
 
     private static int indexToPosition(int index) {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            // ILGRAM: only two pages — Chats (0) and Settings (1). Other tabs get unreachable positions.
+            return index == INDEX_CHATS ? 0 : index == INDEX_SETTINGS ? 1 : -100 - index;
+        }
         return index > 2 ? index - 1 : index;
     }
+
+    private static final int ILGRAM_POSITION_SETTINGS = 1;
 
     private static final int ANIMATOR_ID_TABS_VISIBLE = 0;
     private final BoolAnimator animatorTabsVisible = new BoolAnimator(ANIMATOR_ID_TABS_VISIBLE,
@@ -352,6 +358,16 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             tabsView.setViewVisible(view, true, false);
         }
         checkUi_callTabVisible(getUserConfig().showCallsTab, false);
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            // ILGRAM: Contacts, Calls and the account/profile switcher tab are not shown
+            tabsView.setViewVisible(tabs[INDEX_CONTACTS], false, false);
+            tabsView.setViewVisible(tabs[INDEX_CALLS], false, false);
+            tabsView.setViewVisible(tabs[INDEX_PROFILE], false, false);
+            tabs[INDEX_CHATS].setOnLongClickListener(null);
+            tabs[INDEX_PROFILE].setOnLongClickListener(null);
+            tabs[INDEX_CONTACTS].setOnLongClickListener(null);
+            tabs[INDEX_CALLS].setOnLongClickListener(null);
+        }
 
         selectTab(viewPager.getCurrentPosition(), false);
 
@@ -402,7 +418,18 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             return;
         }
 
-        final int unreadCount = MessagesStorage.getInstance(currentAccount).getMainUnreadCount();
+        int unreadCount = MessagesStorage.getInstance(currentAccount).getMainUnreadCount();
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            // ILGRAM: count only chats that are visible in the student UI
+            unreadCount = 0;
+            final ArrayList<TLRPC.Dialog> visible = getMessagesController().getDialogs(0);
+            for (int i = 0; i < visible.size(); i++) {
+                final TLRPC.Dialog d = visible.get(i);
+                if (getMessagesController().getDialogUnreadCount(d) > 0 || d.unread_mark) {
+                    unreadCount++;
+                }
+            }
+        }
         if (unreadCount > 0) {
             final String unreadCountFmt = LocaleController.formatNumber(unreadCount, ',');
             tabs[INDEX_CHATS].setCounter(unreadCountFmt, false, animated);
@@ -768,6 +795,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
     @Override
     protected int getFragmentsCount() {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            return 2; // ILGRAM: Chats + Settings
+        }
         return TABS_COUNT;
     }
 
@@ -807,6 +837,11 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
     @Override
     protected BaseFragment createBaseFragmentAt(int position) {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive() && position == ILGRAM_POSITION_SETTINGS) {
+            Bundle args = new Bundle();
+            args.putBoolean("hasMainTabs", true);
+            return new SettingsActivity(args);
+        }
         if (position == POSITION_CONTACTS) {
             Bundle args = new Bundle();
             args.putBoolean("needPhonebook", true);
@@ -991,6 +1026,8 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             }
         } else if (id == NotificationCenter.needSetDayNightTheme) {
             clearAllHiddenFragments();
+        } else if (id == NotificationCenter.callTabsVisibleToggled && org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            // ILGRAM: calls tab never shown
         } else if (id == NotificationCenter.callTabsVisibleToggled) {
             final boolean callTabsVisible = getUserConfig().showCallsTab;
             checkUi_callTabVisible(callTabsVisible, true);
@@ -1087,6 +1124,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     }
 
     private void checkUi_callTabVisible(boolean callTabsVisible, boolean animated) {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            callTabsVisible = false; // ILGRAM
+        }
         if (tabsView != null) {
             tabsView.setViewVisible(tabs[INDEX_SETTINGS], !callTabsVisible, animated);
             tabsView.setViewVisible(tabs[INDEX_CALLS], callTabsVisible, animated);
@@ -1159,6 +1199,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
     private void showAccountChangeHint() {
         if (accountSwitchHintShown) return;
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) return; // ILGRAM: single account
 
         if (accountSwitchHint == null && HintsController.Hint.AccountSwitchHint.show()) {
             AndroidUtilities.runOnUIThread(() -> {

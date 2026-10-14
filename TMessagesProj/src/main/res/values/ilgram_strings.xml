@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ILGRAM managed configuration labels (shown in MDM consoles) -->
+    <string name="IlgramRestrictionStudentMode" translatable="false">O\'quvchi rejimi (cheklangan interfeys)</string>
+    <string name="IlgramRestrictionGroups" translatable="false">Ruxsat etilgan guruhlar (Chat ID)</string>
+    <string name="IlgramRestrictionGroupsInfo" translatable="false">Vergul bilan: -1001234567890, -123456789</string>
+    <string name="IlgramRestrictionUsers" translatable="false">Ruxsat etilgan foydalanuvchilar (User ID)</string>
+    <string name="IlgramRestrictionUsersInfo" translatable="false">Vergul bilan: 123456789, 987654321</string>
+    <string name="IlgramRestrictionServiceNotifications" translatable="false">Telegram xizmat xabarlarini ko\'rsatish</string>
+    <string name="IlgramRestrictionSecretChats" translatable="false">Maxfiy chatlarga ruxsat</string>
+    <string name="IlgramRestrictionHelpText" translatable="false">Yordam matni</string>
+</resources>

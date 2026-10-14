@@ -6856,7 +6856,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             filterOptions = null;
         }
         final ArrayList<MessagesController.DialogFilter> filters = getMessagesController().getDialogFilters();
-        if (filters.size() > 1) {
+        if (filters.size() > 1 && !org.telegram.ilgram.ILGRAMPolicy.isActive()) { // ILGRAM: no chat folders
             if (force || filterTabsView.getVisibility() != View.VISIBLE) {
                 boolean animatedUpdateItems = animated;
                 if (filterTabsView.getVisibility() != View.VISIBLE) {
@@ -7053,7 +7053,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             Activity activity = getParentActivity();
             if (activity != null) {
                 checkPermission = false;
-                boolean hasNotContactsPermission = activity.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED;
+                boolean hasNotContactsPermission = !org.telegram.ilgram.ILGRAMPolicy.isActive() && activity.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED; // ILGRAM
                 boolean hasNotStoragePermission = (Build.VERSION.SDK_INT <= 28 || BuildVars.NO_SCOPED_STORAGE) && activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
                 boolean hasNotNotificationsPermission = Build.VERSION.SDK_INT >= 33 && activity.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED;
                 AndroidUtilities.runOnUIThread(() -> {
@@ -7462,6 +7462,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void showSearch(boolean show, boolean startFromDownloads, boolean animated, boolean forceNotOnlyDialogs) {
+        if (show && !org.telegram.ilgram.ILGRAMPolicy.isGlobalSearchEnabled()) {
+            return; // ILGRAM: global search hidden
+        }
         animatorSearchVisible.setValue(show, animated);
 
         if (!show) {
@@ -8844,13 +8847,15 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void updateFloatingButtonVisibility(boolean animated) {
+        final boolean ilgram = org.telegram.ilgram.ILGRAMPolicy.isActive();
         final boolean isVisible = !(onlySelect && initialDialogsType != 10 || folderId != 0 || communityId != 0 || inPreviewMode || (searching && !onlySelect) || floatingButtonHidden);
 
         if (floatingButton3 != null) {
-            floatingButton3.setButtonVisible(isVisible, animated);
+            // ILGRAM: no "new message / new group / new channel" button in the main list
+            floatingButton3.setButtonVisible(isVisible && !(ilgram && !onlySelect), animated);
         }
         if (floatingButtonStories != null) {
-            floatingButtonStories.setButtonVisible(isVisible, animated);
+            floatingButtonStories.setButtonVisible(isVisible && !ilgram, animated);
         }
     }
 
@@ -10357,7 +10362,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
             permissons.add(Manifest.permission.POST_NOTIFICATIONS);
         }
-        if (getUserConfig().syncContacts && askAboutContacts && activity.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+        if (!org.telegram.ilgram.ILGRAMPolicy.isActive() && getUserConfig().syncContacts && askAboutContacts && activity.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) { // ILGRAM: never ask for contacts
             if (alert) {
                 AlertDialog.Builder builder = AlertsCreator.createContactsPermissionDialog(activity, param -> {
                     askAboutContacts = param != 0;
@@ -12743,6 +12748,15 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     public void updateStoriesVisibility(boolean animated) {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            dialogStoriesCellVisible = false; // ILGRAM: stories are not part of the student UI
+            hasOnlySlefStories = false;
+            if (dialogStoriesCell != null) {
+                dialogStoriesCell.setVisibility(View.GONE);
+            }
+            progressToDialogStoriesCell = 0;
+            return;
+        }
         if (dialogStoriesCell == null || storiesVisibilityAnimator != null || rightSlidingDialogContainer != null && rightSlidingDialogContainer.hasFragment() || searchIsShowed || actionBar == null || actionBar.isActionModeShowed() || onlySelect) {
             return;
         }
@@ -14136,6 +14150,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private boolean isSupportSearch() {
+        if (!org.telegram.ilgram.ILGRAMPolicy.isGlobalSearchEnabled()) {
+            return false; // ILGRAM: global search hidden
+        }
         return initialDialogsType != DIALOGS_TYPE_ADD_USERS_TO;
     }
 

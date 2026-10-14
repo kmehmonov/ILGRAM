@@ -1632,7 +1632,9 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter implements
             return;
         }
 
-        if (!hasHints && dialogsType == 0 && folderId == 0 && messagesController.isDialogsEndReached(folderId) && !forceUpdatingContacts) {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            onlineContacts = null; // ILGRAM: no contact suggestions in the student chat list
+        } else if (!hasHints && dialogsType == 0 && folderId == 0 && messagesController.isDialogsEndReached(folderId) && !forceUpdatingContacts) {
             if (messagesController.getAllFoldersDialogsCount() <= 10 && ContactsController.getInstance(currentAccount).doneLoadingContacts && !ContactsController.getInstance(currentAccount).contacts.isEmpty()) {
                 onlineContacts = new ArrayList<>(ContactsController.getInstance(currentAccount).contacts);
                 long selfId = UserConfig.getInstance(currentAccount).clientUserId;
@@ -1655,7 +1657,8 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter implements
         }
 
         final MessagesController.DialogFilter filter = getCurrentFilter();
-        if ((filter == null || filter.isDefault()) && parentFragment != null && parentFragment.isReplyTo && parentFragment.replyMessageAuthor != 0) {
+        if ((filter == null || filter.isDefault()) && parentFragment != null && parentFragment.isReplyTo && parentFragment.replyMessageAuthor != 0
+                && org.telegram.ilgram.ILGRAMPolicy.canForwardTo(currentAccount, parentFragment.replyMessageAuthor)) {
             itemInternals.add(new ItemInternal(VIEW_TYPE_GRAY_SECTION));
             TLRPC.Dialog foundDialog = null;
             for (int i = 0; i < array.size(); ++i) {
@@ -1670,7 +1673,8 @@ public class DialogsAdapter extends RecyclerListView.SelectionAdapter implements
             }
             itemInternals.add(new ItemInternal(VIEW_TYPE_DIALOG, foundDialog));
             itemInternals.add(new ItemInternal(VIEW_TYPE_GRAY_SECTION));
-        } else if ((filter == null || filter.isDefault()) && parentFragment != null && dialogsType == DialogsActivity.DIALOGS_TYPE_FORWARD && parentFragment.forwardOriginalChannel != 0) {
+        } else if ((filter == null || filter.isDefault()) && parentFragment != null && dialogsType == DialogsActivity.DIALOGS_TYPE_FORWARD && parentFragment.forwardOriginalChannel != 0
+                && org.telegram.ilgram.ILGRAMPolicy.canForwardTo(currentAccount, parentFragment.forwardOriginalChannel)) {
             itemInternals.add(new ItemInternal(VIEW_TYPE_GRAY_SECTION));
             TLRPC.Dialog foundDialog = null;
             for (int i = 0; i < array.size(); ++i) {

@@ -1984,6 +1984,9 @@ public class ContactsController extends BaseController {
     }
 
     public static boolean hasContactsPermission() {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            return false; // ILGRAM: phone book is never read or uploaded (no contacts discovery)
+        }
         if (Build.VERSION.SDK_INT >= 23) {
             return ApplicationLoader.applicationContext.checkSelfPermission(android.Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
         }

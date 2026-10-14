@@ -994,6 +994,9 @@ public abstract class BaseFragment {
         if (getParentActivity() == null) {
             return null;
         }
+        if (!org.telegram.ilgram.ILGRAMPolicy.checkPresent(fragment)) {
+            return null; // ILGRAM navigation guard
+        }
         BottomSheet[] bottomSheet = new BottomSheet[1];
         INavigationLayout[] actionBarLayout = new INavigationLayout[]{INavigationLayout.newLayout(getParentActivity(), false, () -> bottomSheet[0])};
         actionBarLayout[0].setIsSheet(true);

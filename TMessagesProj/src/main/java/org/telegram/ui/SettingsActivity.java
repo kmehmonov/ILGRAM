@@ -475,6 +475,10 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         versionView.setGravity(Gravity.CENTER);
         versionView.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), Theme.RIPPLE_MASK_ALL));
         versionView.setOnClickListener(v -> {
+            if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+                ilgramShowAbout(); // ILGRAM: no debug menu for students
+                return;
+            }
             versionViewPressCount++;
             if (versionViewPressCount < 2 && !BuildVars.DEBUG_PRIVATE_VERSION) {
                 try {
@@ -758,7 +762,113 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(SettingCell.Factory.of(22, 0xFFF45255, 0xFFDF3955, 0, getString(R.string.DebugClearLogs)));
         }
 
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            ilgramFilterItems(items);
+        }
         items.add(UItem.asCustomShadow(versionView));
+    }
+
+    // ------------------------------------------------------------------------------------------
+    // ILGRAM: simplified settings for students
+    // ------------------------------------------------------------------------------------------
+
+    private static final int ILGRAM_HELP_ID = 901;
+    private static final int ILGRAM_ABOUT_ID = 902;
+
+    private static String ilgramSettingKey(int id) {
+        switch (id) {
+            case 1: return org.telegram.ilgram.ILGRAMRules.SETTING_ACCOUNT;
+            case 2: return org.telegram.ilgram.ILGRAMRules.SETTING_CHAT;
+            case 3: return org.telegram.ilgram.ILGRAMRules.SETTING_PRIVACY;
+            case 5: return org.telegram.ilgram.ILGRAMRules.SETTING_NOTIFICATIONS;
+            case 6: return org.telegram.ilgram.ILGRAMRules.SETTING_DATA;
+            case 7: return org.telegram.ilgram.ILGRAMRules.SETTING_FOLDERS;
+            case 8: return org.telegram.ilgram.ILGRAMRules.SETTING_DEVICES;
+            case 9: return org.telegram.ilgram.ILGRAMRules.SETTING_POWER;
+            case 10: return org.telegram.ilgram.ILGRAMRules.SETTING_LANGUAGE;
+            case 11: return org.telegram.ilgram.ILGRAMRules.SETTING_PREMIUM;
+            case 12:
+            case 13: return org.telegram.ilgram.ILGRAMRules.SETTING_STARS;
+            case 15: return org.telegram.ilgram.ILGRAMRules.SETTING_BUSINESS;
+            case 16: return org.telegram.ilgram.ILGRAMRules.SETTING_GIFTS;
+            case 17: return org.telegram.ilgram.ILGRAMRules.SETTING_ASK_QUESTION;
+            case 18: return org.telegram.ilgram.ILGRAMRules.SETTING_FAQ;
+            case 19: return org.telegram.ilgram.ILGRAMRules.SETTING_PRIVACY_POLICY;
+            case 23: return org.telegram.ilgram.ILGRAMRules.SETTING_FEATURES;
+            case 25: return org.telegram.ilgram.ILGRAMRules.SETTING_WALLET;
+            case ILGRAM_HELP_ID:
+            case ILGRAM_ABOUT_ID: return null;
+            default: return org.telegram.ilgram.ILGRAMRules.SETTING_DEBUG;
+        }
+    }
+
+    private void ilgramFilterItems(ArrayList<UItem> items) {
+        final ArrayList<UItem> out = new ArrayList<>(items.size());
+        for (int i = 0; i < items.size(); i++) {
+            final UItem item = items.get(i);
+            if (item.instanceOf(SettingCell.Factory.class)) {
+                final String key = ilgramSettingKey(item.id);
+                if (key != null && !org.telegram.ilgram.ILGRAMPolicy.isSettingVisible(key)) {
+                    continue;
+                }
+            } else if (item.instanceOf(AccountCell.Factory.class) || item.instanceOf(SuggestionCell.Factory.class)) {
+                continue;
+            } else if (item.viewType == UniversalAdapter.VIEW_TYPE_HEADER) {
+                continue;
+            }
+            if (item.viewType == UniversalAdapter.VIEW_TYPE_SHADOW && !out.isEmpty()) {
+                final int last = out.get(out.size() - 1).viewType;
+                if (last == UniversalAdapter.VIEW_TYPE_SHADOW || last == UniversalAdapter.VIEW_TYPE_CUSTOM_SHADOW) {
+                    continue;
+                }
+            }
+            out.add(item);
+        }
+        if (out.isEmpty() || out.get(out.size() - 1).viewType != UniversalAdapter.VIEW_TYPE_SHADOW) {
+            out.add(UItem.asShadow(null));
+        }
+        out.add(UItem.asHeader("ILGRAM"));
+        out.add(SettingCell.Factory.of(ILGRAM_HELP_ID, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.settings_ask, "Yordam"));
+        out.add(SettingCell.Factory.of(ILGRAM_ABOUT_ID, IconBackgroundColors.GREEN.top, IconBackgroundColors.GREEN.bottom, R.drawable.settings_policy, "Ilova haqida"));
+        items.clear();
+        items.addAll(out);
+    }
+
+    private void ilgramShowHelp() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        String text = org.telegram.ilgram.ILGRAMPolicy.config().helpText;
+        if (TextUtils.isEmpty(text)) {
+            text = "ILGRAM — maktab uchun Telegram ilovasi.\n\n"
+                + "• Ro'yxatda faqat maktab tasdiqlagan guruhlar va shaxsiy chatlar ko'rinadi.\n"
+                + "• Yangi guruh yoki chat kerak bo'lsa, sinf rahbariga yoki maktab administratoriga murojaat qiling.\n"
+                + "• Telefon raqami, parol yoki kirish kodini hech kimga bermang.\n"
+                + "• Akkauntdan chiqish: Sozlamalar → Hisob → Chiqish.";
+        }
+        showDialog(new AlertDialog.Builder(getParentActivity(), getResourceProvider())
+            .setTitle("Yordam")
+            .setMessage(text.replace("\\n", "\n"))
+            .setPositiveButton(getString(R.string.OK), null)
+            .create());
+    }
+
+    private void ilgramShowAbout() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        final String text = "ILGRAM " + BuildVars.BUILD_VERSION_STRING + "\n"
+            + "Istiqbol LUCK va Istiqbol LIGHT maktablari uchun.\n\n"
+            + "ILGRAM — Telegram'ning rasmiy ochiq kodli Android klienti asosida qurilgan norasmiy ilova "
+            + "(GNU GPL v2, manba kodi: github.com/kmehmonov/ILGRAM). U Telegram serverlari bilan ishlaydi.\n\n"
+            + "Cheklovlar faqat shu ilova interfeysida amal qiladi: ular Telegram serveridagi huquqlaringizni o'zgartirmaydi, "
+            + "xabarlarni o'chirmaydi va hech qayerga nusxalamaydi.\n\n"
+            + "Maxfiylik: ILGRAM xabarlar, parollar, kirish kodlari yoki sessiya kalitlarini maktab serveriga yoki boshqa joyga yubormaydi.";
+        showDialog(new AlertDialog.Builder(getParentActivity(), getResourceProvider())
+            .setTitle("Ilova haqida")
+            .setMessage(text)
+            .setPositiveButton(getString(R.string.OK), null)
+            .create());
     }
 
     private void presentSettingFragment(BaseFragment fragment) {
@@ -817,6 +927,12 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             return;
         }
         switch (item.id) {
+            case ILGRAM_HELP_ID:
+                ilgramShowHelp();
+                break;
+            case ILGRAM_ABOUT_ID:
+                ilgramShowAbout();
+                break;
             case 1:
                 presentSettingFragment(new UserInfoActivity());
                 break;

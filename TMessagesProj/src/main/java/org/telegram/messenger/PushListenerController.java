@@ -1839,6 +1839,9 @@ public class PushListenerController {
 
         @Override
         public boolean hasServices() {
+            if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+                return false; // ILGRAM: third-party api_id gets no Telegram FCM pushes; keep-alive service is used instead
+            }
             if (hasServices == null) {
                 try {
                     int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(ApplicationLoader.applicationContext);

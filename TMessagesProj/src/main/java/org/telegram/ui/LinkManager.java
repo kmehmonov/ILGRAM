@@ -89,6 +89,10 @@ public class LinkManager {
 
     public boolean handle(Uri uri) {
         if (uri == null) return false;
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive() && org.telegram.ilgram.ILGRAMPolicy.classifyUrl(uri.toString()) == org.telegram.ilgram.ILGRAMRules.LinkDecision.BLOCK) {
+            org.telegram.ilgram.ILGRAMPolicy.showBlocked(activity);
+            return true; // ILGRAM: deep link / Android intent consumed without action
+        }
 
         FileLog.d("link manager handle " + uri);
 

@@ -292,6 +292,20 @@ public class Browser {
         if (context == null || uri == null) {
             return;
         }
+        if (!org.telegram.ilgram.ILGRAMPolicy.canOpenUrl(context, uri)) {
+            if (inCaseLoading != null) {
+                inCaseLoading.end();
+            }
+            return; // ILGRAM link policy
+        }
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive() && org.telegram.ilgram.ILGRAMPolicy.classifyUrl(uri.toString()) == org.telegram.ilgram.ILGRAMRules.LinkDecision.ALLOW_INTERNAL) {
+            // ILGRAM: Telegram links are always resolved inside the app (never handed to a browser);
+            // the navigation guard then decides whether the target chat may be opened.
+            tryTelegraph = false;
+            _allowCustom = false;
+            allowInAppBrowser = false;
+            browser = null;
+        }
         final int currentAccount = UserConfig.selectedAccount;
         boolean[] forceBrowser = new boolean[]{false};
         boolean internalUri = isInternalUri(uri, forceBrowser);
@@ -453,6 +467,10 @@ public class Browser {
     }
     public static boolean openAsInternalIntent(Context context, String url, boolean forceNotInternalForApps, boolean forceRequest, Progress progress) {
         if (url == null) return false;
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive() && org.telegram.ilgram.ILGRAMPolicy.classifyUrl(url) == org.telegram.ilgram.ILGRAMRules.LinkDecision.BLOCK) {
+            org.telegram.ilgram.ILGRAMPolicy.showBlocked(context);
+            return true; // ILGRAM: consumed (blocked), do not fall back to a browser
+        }
         LaunchActivity activity = null;
         if (AndroidUtilities.findActivity(context) instanceof LaunchActivity) {
             activity = (LaunchActivity) AndroidUtilities.findActivity(context);
@@ -484,6 +502,10 @@ public class Browser {
     }
 
     public static boolean openInTelegramBrowser(Context context, String url, Browser.Progress progress) {
+        if (!org.telegram.ilgram.ILGRAMPolicy.isWebViewAllowed()) {
+            org.telegram.ilgram.ILGRAMPolicy.showBlocked(context);
+            return true; // ILGRAM: in-app browser disabled
+        }
         if (LaunchActivity.instance != null) {
             BottomSheetTabs tabs = LaunchActivity.instance.getBottomSheetTabs();
             if (tabs != null && tabs.tryReopenTab(url) != null) {
@@ -508,6 +530,10 @@ public class Browser {
     }
     public static boolean openInExternalBrowser(Context context, String url, boolean allowIntent, String browser) {
         if (url == null) return false;
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive() && org.telegram.ilgram.ILGRAMPolicy.classifyUrl(url) != org.telegram.ilgram.ILGRAMRules.LinkDecision.ALLOW_EXTERNAL) {
+            org.telegram.ilgram.ILGRAMPolicy.showBlocked(context);
+            return true; // ILGRAM: never hand links to an external browser
+        }
         try {
             Uri uri = Uri.parse(url);
             final boolean isIntentScheme = uri.getScheme() != null && uri.getScheme().equalsIgnoreCase("intent");
@@ -556,6 +582,7 @@ public class Browser {
 
     public static boolean openInExternalApp(Context context, String url, boolean allowIntent) {
         if (url == null) return false;
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive() && !org.telegram.ilgram.ILGRAMPolicy.config().browserEnabled) return false; // ILGRAM
         try {
             if (isTonsite(url) || isInternalUrl(url, null)) return false;
             Uri uri = Uri.parse(url);

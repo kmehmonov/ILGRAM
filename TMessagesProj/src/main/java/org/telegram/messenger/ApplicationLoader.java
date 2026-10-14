@@ -350,6 +350,8 @@ public class ApplicationLoader extends Application {
 
         applicationHandler = new Handler(applicationContext.getMainLooper());
 
+        org.telegram.ilgram.ILGRAMPolicy.init(applicationContext); // ILGRAM: load restricted-UI configuration
+
         AndroidUtilities.runOnUIThread(ApplicationLoader::startPushService);
 
         LauncherIconController.tryFixLauncherIconIfNeeded();
@@ -365,6 +367,16 @@ public class ApplicationLoader extends Application {
     });
 
     public static void startPushService() {
+        if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+            // ILGRAM: third-party api_id builds receive no Firebase pushes from Telegram, so a
+            // foreground keep-alive service keeps the connection open for background messages.
+            try {
+                androidx.core.content.ContextCompat.startForegroundService(applicationContext, new Intent(applicationContext, NotificationsService.class));
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
+            return;
+        }
         SharedPreferences preferences = MessagesController.getGlobalNotificationsSettings();
         boolean enabled;
         if (preferences.contains("pushService")) {
