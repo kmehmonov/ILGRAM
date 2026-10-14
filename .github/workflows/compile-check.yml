@@ -1,0 +1,31 @@
+name: ILGRAM compile check
+
+# Fast feedback: compiles the Java sources and runs the policy tests without the (slow) native build.
+on:
+  push:
+    branches: [ master ]
+    paths: [ 'TMessagesProj/src/**', 'TMessagesProj/build.gradle', 'TMessagesProj_App/**', 'ilgram/**', '.github/workflows/compile-check.yml' ]
+  workflow_dispatch:
+
+concurrency:
+  group: compile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Policy unit tests
+        run: bash ilgram/tests/run-tests.sh
+      - name: Compile Java (TMessagesProj)
+        run: ./gradlew --no-daemon :TMessagesProj:compileReleaseJavaWithJavac :TMessagesProj_App:processAfatReleaseMainManifest
