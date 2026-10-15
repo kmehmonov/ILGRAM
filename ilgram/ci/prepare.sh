@@ -18,7 +18,16 @@ if [ -z "${ILGRAM_API_ID:-}" ] || [ -z "${ILGRAM_API_HASH:-}" ]; then
   echo "::warning::ILGRAM_API_ID / ILGRAM_API_HASH secrets are missing - the APK builds, but Telegram login will fail (API_ID_INVALID). Get them at https://my.telegram.org"
 fi
 
-# 3) Version: Telegram base version code * 1000 + CI run number (monotonic, so MDM updates work)
+# 3) School configuration (allowed group / user IDs). Kept in a secret because user IDs are personal
+#    data and this repository is public. Format: the same key=value lines as assets/ilgram.properties.
+if [ -n "${ILGRAM_CONFIG:-}" ]; then
+  printf '%s\n' "$ILGRAM_CONFIG" > TMessagesProj/src/main/assets/ilgram.properties
+  echo "ILGRAM: school configuration injected from the ILGRAM_CONFIG secret ($(grep -c '=' TMessagesProj/src/main/assets/ilgram.properties) keys)"
+else
+  echo "::warning::ILGRAM_CONFIG secret is missing - the APK uses the default config (no allowed groups/users yet)"
+fi
+
+# 4) Version: Telegram base version code * 1000 + CI run number (monotonic, so MDM updates work)
 BASE_CODE=$(grep '^APP_VERSION_CODE=' gradle.properties | cut -d= -f2)
 BASE_NAME=$(grep '^APP_VERSION_NAME=' gradle.properties | cut -d= -f2)
 RUN=${GITHUB_RUN_NUMBER:-0}

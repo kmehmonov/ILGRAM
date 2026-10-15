@@ -61,6 +61,7 @@ jobs:
           ILGRAM_KEYSTORE_PASSWORD: ${{ secrets.ILGRAM_KEYSTORE_PASSWORD }}
           ILGRAM_KEY_ALIAS: ${{ secrets.ILGRAM_KEY_ALIAS }}
           ILGRAM_KEY_PASSWORD: ${{ secrets.ILGRAM_KEY_PASSWORD }}
+          ILGRAM_CONFIG: ${{ secrets.ILGRAM_CONFIG }}
         run: |
           . ilgram/ci/prepare.sh
           ./gradlew --no-daemon --stacktrace :TMessagesProj_App:assembleAfatRelease

@@ -150,6 +150,12 @@ public final class ILGRAMPolicy {
         }
     }
 
+    /** Instrumentation tests only: replaces the active configuration. */
+    public static void setConfigForTesting(ILGRAMRules.Config testConfig) {
+        initialized = true;
+        config = testConfig != null ? testConfig : ILGRAMRules.Config.lockedDown();
+    }
+
     public static ILGRAMRules.Config config() {
         if (!initialized && ApplicationLoader.applicationContext != null) {
             init(ApplicationLoader.applicationContext);

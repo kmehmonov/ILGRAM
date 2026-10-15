@@ -142,7 +142,8 @@ android {
 
         // ILGRAM: school phones are ARM; skipping x86 halves native build time
         ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a'
+            // -PilgramAbis=x86_64 is used by the emulator test workflow
+            abiFilters(*((project.findProperty("ilgramAbis") ?: "armeabi-v7a,arm64-v8a").toString().split(",")))
         }
 
         // ILGRAM: Telegram API credentials are injected from the environment (CI secrets), never committed.
