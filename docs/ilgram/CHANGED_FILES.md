@@ -12,6 +12,8 @@ Bazaviy commit: `f32ffee` (DrKLO/Telegram 13.0.2 (7175)). Barcha ILGRAM o'zgaris
 | `TMessagesProj/src/main/AndroidManifest.xml` | 6 | 2 | Managed configuration meta-data; NotificationsService (exported=false, remoteMessaging) |
 | `TMessagesProj/src/main/assets/ilgram.properties` | 33 | 0 | YANGI. Standart konfiguratsiya |
 | `TMessagesProj/src/main/java/org/telegram/ilgram/ILGRAMPolicy.java` | 412 | 0 | YANGI. Markaziy UI siyosati (Android): config yuklash, MDM managed config, NavigationGuard, havolalar, bildirishnomalar |
+| `TMessagesProj/src/main/java/org/telegram/ilgram/ILGRAMRemoteConfig.java` | — | 0 | YANGI. Masofaviy ro'yxat: imzo tekshiruvi, shifrni ochish, validatsiya (sof Java) |
+| `TMessagesProj/src/main/java/org/telegram/ilgram/ILGRAMRemoteSync.java` | — | 0 | YANGI. Masofaviy ro'yxatni yuklash, kesh, versiya nazorati, jadval |
 | `TMessagesProj/src/main/java/org/telegram/ilgram/ILGRAMRules.java` | 516 | 0 | YANGI. Sof Java qoidalar: konfiguratsiya, ID normalizatsiyasi, dialog/havola/sozlama qarorlari |
 | `TMessagesProj/src/main/java/org/telegram/messenger/ApplicationLoader.java` | 12 | 0 | ILGRAMPolicy.init(); keep-alive xizmatni ishga tushirish |
 | `TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java` | 8 | 6 | api_id/api_hash secretdan; Telegram update tekshiruvi, SafetyNet, passkeys, billing o'chirilgan |
@@ -31,7 +33,7 @@ Bazaviy commit: `f32ffee` (DrKLO/Telegram 13.0.2 (7175)). Barcha ILGRAM o'zgaris
 | `TMessagesProj/src/main/java/org/telegram/ui/CameraScanActivity.java` | 4 | 0 | QR skaner (desktop login) o'chirilgan |
 | `TMessagesProj/src/main/java/org/telegram/ui/DataSettingsActivity.java` | 9 | 3 | Proxy bo'limi yashirin |
 | `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java` | 22 | 5 | Global qidiruv, folder tablari, FAB, stories, kontakt so'rovi o'chirilgan |
-| `TMessagesProj/src/main/java/org/telegram/ui/LaunchActivity.java` | 5 | 2 | Login oldidan proxy havolalari qabul qilinmaydi; Telegram intro ekrani o'tkazib yuboriladi |
+| `TMessagesProj/src/main/java/org/telegram/ui/LaunchActivity.java` | 6 | 2 | Login oldidan proxy havolalari qabul qilinmaydi; Telegram intro ekrani o'tkazib yuboriladi; ochilganda masofaviy ro'yxat tekshiruvi |
 | `TMessagesProj/src/main/java/org/telegram/ui/LauncherIconController.java` | 13 | 0 | Faqat ILGRAM ikonkasi |
 | `TMessagesProj/src/main/java/org/telegram/ui/LinkManager.java` | 4 | 0 | Android deep link / intent policy |
 | `TMessagesProj/src/main/java/org/telegram/ui/MainTabsActivity.java` | 42 | 1 | Faqat Chatlar + Sozlamalar tablari; akkaunt almashtirish yo'q |

@@ -34,3 +34,17 @@ RUN=${GITHUB_RUN_NUMBER:-0}
 export ORG_GRADLE_PROJECT_APP_VERSION_CODE=$(( BASE_CODE * 1000 + RUN % 1000 ))
 export ORG_GRADLE_PROJECT_APP_VERSION_NAME="${BASE_NAME}-ilgram.${RUN}"
 echo "ILGRAM: versionName=${ORG_GRADLE_PROJECT_APP_VERSION_NAME} versionCode(base)=${ORG_GRADLE_PROJECT_APP_VERSION_CODE}"
+
+# 5) Remote allow-list (signed by the school's admin bot). Only the PUBLIC verification key and the
+#    AES key go into the APK; the signing key never leaves the bot's server.
+if [ -n "${ILGRAM_REMOTE_PUBKEY:-}" ] && [ -n "${ILGRAM_REMOTE_AESKEY:-}" ]; then
+  {
+    echo ""
+    echo "remote_config_url=${ILGRAM_REMOTE_URL:-https://ilgram.istiqbol-luck.uz/config}"
+    echo "remote_config_public_key=${ILGRAM_REMOTE_PUBKEY}"
+    echo "remote_config_aes_key=${ILGRAM_REMOTE_AESKEY}"
+  } >> TMessagesProj/src/main/assets/ilgram.properties
+  echo "ILGRAM: remote allow-list enabled (${ILGRAM_REMOTE_URL:-https://ilgram.istiqbol-luck.uz/config})"
+else
+  echo "::warning::ILGRAM_REMOTE_PUBKEY / ILGRAM_REMOTE_AESKEY secrets are missing - remote allow-list updates are off in this APK"
+fi

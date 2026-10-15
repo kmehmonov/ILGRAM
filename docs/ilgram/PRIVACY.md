@@ -14,3 +14,5 @@ Istiqbol LUCK va Istiqbol LIGHT maktablari o'quvchilari uchun.
 7. **Akkauntdan chiqish:** Sozlamalar → Hisob → Chiqish. Akkauntni o'chirish: Sozlamalar → Maxfiylik va xavfsizlik.
 8. **Telegram'ning o'z siyosati** ham amal qiladi: https://telegram.org/privacy
 9. Savollar: maktab IT bo'limi.
+
+**Masofaviy ruxsatlar ro'yxati.** ILGRAM vaqti-vaqti bilan maktab serveridan (`ilgram.istiqbol-luck.uz`) ruxsat berilgan chatlar ro'yxatini yuklab oladi. Bu oddiy fayl so'rovi: unda foydalanuvchi, telefon raqami, chatlar yoki xabarlar haqida hech qanday ma'lumot yuborilmaydi. Server faqat kunlik so'rovlar sonini hisoblaydi.

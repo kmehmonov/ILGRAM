@@ -6973,6 +6973,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     protected void onResume() {
         super.onResume();
         isResumed = true;
+        org.telegram.ilgram.ILGRAMRemoteSync.onAppForeground(); // ILGRAM: check the school allow-list when opened
         pipActivityHandler.onResume();
         if (onResumeStaticCallback != null) {
             onResumeStaticCallback.run();

@@ -14,7 +14,7 @@ echo "package=$PKG test package=$TPKG" | tee -a "$OUT/install.txt"
 adb shell pm grant "$PKG" android.permission.POST_NOTIFICATIONS 2>/dev/null || true
 adb logcat -c || true
 adb shell am instrument -w -r \
-  -e class org.telegram.ilgram.ILGRAMIntegrationTest,org.telegram.ilgram.ILGRAMSmokeTest \
+  -e class org.telegram.ilgram.ILGRAMIntegrationTest,org.telegram.ilgram.ILGRAMSmokeTest,org.telegram.ilgram.ILGRAMRemoteSyncTest \
   "$TPKG/androidx.test.runner.AndroidJUnitRunner" > "$OUT/instrument-raw.txt" 2>&1
 cat "$OUT/instrument-raw.txt" | grep -E "INSTRUMENTATION_STATUS: (test|class)=|INSTRUMENTATION_STATUS_CODE|INSTRUMENTATION_CODE|OK \(|FAILURES|Tests run|Error|Exception" | head -300 > "$OUT/instrument-summary.txt"
 cat "$OUT/instrument-summary.txt" | tail -60

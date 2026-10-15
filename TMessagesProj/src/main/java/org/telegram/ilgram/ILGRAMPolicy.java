@@ -67,6 +67,7 @@ public final class ILGRAMPolicy {
 
     private static volatile ILGRAMRules.Config config = ILGRAMRules.Config.lockedDown();
     private static volatile boolean initialized;
+    private static volatile Context appContext;
     private static long lastToastTime;
 
     private ILGRAMPolicy() {
@@ -83,7 +84,12 @@ public final class ILGRAMPolicy {
         }
         initialized = true;
         final Context app = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+        appContext = app;
         reload(app);
+        ILGRAMRemoteSync remote = ILGRAMRemoteSync.get();
+        if (remote != null && config.studentModeEnabled) {
+            remote.start();
+        }
         if (Build.VERSION.SDK_INT >= 21) {
             try {
                 // Device Owner / MDM can change the managed configuration at runtime.
@@ -106,7 +112,7 @@ public final class ILGRAMPolicy {
         }
     }
 
-    private static void reload(Context app) {
+    private static synchronized void reload(Context app) {
         Properties base = new Properties();
         try (InputStream in = app.getAssets().open(ASSET_CONFIG)) {
             base.load(new java.io.InputStreamReader(in, "UTF-8"));
@@ -132,8 +138,40 @@ public final class ILGRAMPolicy {
                 FileLog.e(e);
             }
         }
-        config = ILGRAMRules.parse(base, managed);
-        FileLog.d("ILGRAM config loaded: " + config);
+        // Precedence: bundled (APK) < remote allow-list (signed, from the school's bot) < MDM managed config.
+        // The remote list only carries allowed_group_ids / allowed_user_ids; it REPLACES the bundled lists
+        // (an empty published list really means "nothing allowed").
+        Properties merged = new Properties();
+        merged.putAll(base);
+        ILGRAMRemoteSync remote = ILGRAMRemoteSync.get();
+        if (remote == null) {
+            remote = ILGRAMRemoteSync.create(app, base);
+        }
+        Properties remoteProps = remote != null ? remote.properties() : null;
+        if (remoteProps != null) {
+            merged.putAll(remoteProps);
+        }
+        config = ILGRAMRules.parse(merged, managed);
+        FileLog.d("ILGRAM config loaded" + (remoteProps != null ? " (remote v" + remote.current().version + ")" : "") + ": " + config);
+    }
+
+    /** Called by ILGRAMRemoteSync (background thread) after a newer allow-list was verified and stored. */
+    static void onRemoteConfigChanged() {
+        Context app = appContext;
+        if (app == null) {
+            return;
+        }
+        synchronized (ILGRAMPolicy.class) {
+            reload(app);
+        }
+        AndroidUtilities.runOnUIThread(ILGRAMPolicy::onConfigChanged);
+    }
+
+    /** Instrumentation tests only: reloads bundled + remote + managed configuration. */
+    public static void reloadForTesting(Context context) {
+        appContext = context.getApplicationContext();
+        initialized = true;
+        reload(appContext);
     }
 
     private static void onConfigChanged() {
