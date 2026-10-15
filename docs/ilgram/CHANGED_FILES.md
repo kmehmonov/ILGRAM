@@ -31,7 +31,7 @@ Bazaviy commit: `f32ffee` (DrKLO/Telegram 13.0.2 (7175)). Barcha ILGRAM o'zgaris
 | `TMessagesProj/src/main/java/org/telegram/ui/CameraScanActivity.java` | 4 | 0 | QR skaner (desktop login) o'chirilgan |
 | `TMessagesProj/src/main/java/org/telegram/ui/DataSettingsActivity.java` | 9 | 3 | Proxy bo'limi yashirin |
 | `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java` | 22 | 5 | Global qidiruv, folder tablari, FAB, stories, kontakt so'rovi o'chirilgan |
-| `TMessagesProj/src/main/java/org/telegram/ui/LaunchActivity.java` | 2 | 2 | Login oldidan proxy havolalari qabul qilinmaydi |
+| `TMessagesProj/src/main/java/org/telegram/ui/LaunchActivity.java` | 5 | 2 | Login oldidan proxy havolalari qabul qilinmaydi; Telegram intro ekrani o'tkazib yuboriladi |
 | `TMessagesProj/src/main/java/org/telegram/ui/LauncherIconController.java` | 13 | 0 | Faqat ILGRAM ikonkasi |
 | `TMessagesProj/src/main/java/org/telegram/ui/LinkManager.java` | 4 | 0 | Android deep link / intent policy |
 | `TMessagesProj/src/main/java/org/telegram/ui/MainTabsActivity.java` | 42 | 1 | Faqat Chatlar + Sozlamalar tablari; akkaunt almashtirish yo'q |
@@ -56,5 +56,8 @@ Bazaviy commit: `f32ffee` (DrKLO/Telegram 13.0.2 (7175)). Barcha ILGRAM o'zgaris
 | `ilgram/ci/run-device-tests.sh` | 25 | 0 | CI / test / hujjat |
 | `ilgram/tests/ILGRAMRulesTest.java` | 137 | 0 | CI / test / hujjat |
 | `ilgram/tests/run-tests.sh` | 7 | 0 | CI / test / hujjat |
+| `TMessagesProj/src/main/java/org/telegram/messenger/AndroidUtilities.java` | 5 | 0 | Proxy havolalari (login oldidan ham) bloklangan |
+| `TMessagesProj/src/main/java/org/telegram/messenger/HashtagSearchController.java` | 6 | 0 | Barcha chatlar/public post bo'yicha hashtag qidiruvi o'chirilgan |
+| `TMessagesProj/src/main/java/org/telegram/ui/Components/ShareAlert.java` | 19 | 0 | Share oynasi qidiruvi faqat ruxsatli chatlar, server qidiruvi yo'q |
 
 Bundan tashqari: `mipmap-*/ic_launcher*.png` va `drawable-*/notification.png` — ILGRAM ikonkalari (Telegram logotipi o'rniga).
