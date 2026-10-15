@@ -139,6 +139,12 @@ public class HashtagSearchController {
 
     public void searchHashtag(String _query, int guid, int searchType, int loadIndex) {
         SearchResult search = getSearchResult(searchType);
+        if (!org.telegram.ilgram.ILGRAMPolicy.isGlobalSearchEnabled()) {
+            // ILGRAM: hashtag search across all chats / public posts would show content from non-allowed chats
+            search.endReached = true;
+            search.loading = false;
+            return;
+        }
         if (search.lastHashtag == null && _query == null) {
             return;
         }

@@ -1,3 +1,41 @@
+# ILGRAM
+
+**ILGRAM** — Istiqbol LUCK va Istiqbol LIGHT maktablari o'quvchilari uchun Telegram Android klientining
+cheklangan interfeysli versiyasi.
+
+ILGRAM yangi messenjer emas: u Telegram serverlari bilan ishlaydigan haqiqiy Telegram klienti
+([DrKLO/Telegram](https://github.com/DrKLO/Telegram) asosida). MTProto, autentifikatsiya, xabar almashish,
+media, sinxronizatsiya va shifrlash o'zgartirilmagan. Faqat o'quvchi ko'radigan interfeys va navigatsiya cheklangan:
+
+* chatlar ro'yxatida faqat maktab tasdiqlagan **guruhlar (Chat ID)** va **shaxsiy chatlar (User ID)**;
+* kanallar, botlar, arxiv, Saved Messages, global qidiruv, stories, kontaktlar, papkalar yashirin;
+* begona chatga olib boradigan barcha yo'llar (username, avatar, mention, forward manbasi, havolalar, deep link,
+  bildirishnoma) yagona `ILGRAMPolicy` orqali yopilgan;
+* ichki brauzer, Mini Apps, tashqi havolalar, proxy, QR-login, Add/Switch account o'chirilgan;
+* Forward va bildirishnomalar faqat ruxsatli chatlar uchun.
+
+> ⚠️ Cheklovlar faqat shu ilova interfeysida amal qiladi va Telegram serveridagi huquqlarni o'zgartirmaydi.
+> ILGRAM norasmiy ilova, Telegram FZ-LLC bilan bog'liq emas.
+
+## Hujjatlar
+| | |
+|---|---|
+| [Arxitektura va Source Audit](docs/ilgram/ARCHITECTURE.md) | ILGRAMPolicy, NavigationGuard, qayerga ulangan |
+| [Build yo'riqnomasi](docs/ilgram/BUILD.md) | GitHub Actions, secretlar, api_id, ruxsatlar ro'yxati |
+| [MDMesh orqali o'rnatish](docs/ilgram/MDMESH.md) | O'rnatish, yangilash, kiosk, batareya |
+| [Test natijalari](docs/ilgram/TEST_RESULTS.md) | Avtomatik va qo'lda testlar |
+| [Cheklovlar va xatarlar](docs/ilgram/LIMITATIONS_AND_RISKS.md) | Nima yopilmaydi va nega |
+| [Telegram API muvofiqligi](docs/ilgram/TELEGRAM_API_COMPLIANCE.md) | api_id, nom, logotip, GPL |
+| [Maxfiylik siyosati](docs/ilgram/PRIVACY.md) | O'quvchilar uchun |
+| [O'zgartirilgan fayllar](docs/ilgram/CHANGED_FILES.md) | Telegram kodidagi har bir o'zgarish |
+
+## Litsenziya
+GNU GPL v2 yoki keyingi versiya (Telegram for Android bilan bir xil). Manba kodi shu repozitoriyda ochiq.
+
+---
+
+## Telegram for Android (asl README)
+
 ## Telegram messenger for Android
 
 [Telegram](https://telegram.org) is a messaging app with a focus on speed and security. It’s superfast, simple and free.

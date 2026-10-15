@@ -3401,6 +3401,22 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 }
                 boolean becomeEmpty = !searchResult.isEmpty() && result.isEmpty();
                 boolean isEmpty = searchResult.isEmpty() && result.isEmpty();
+                if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+                    // ILGRAM: share search only finds allowed chats
+                    for (int a = 0; a < result.size(); a++) {
+                        final DialogSearchResult obj = (DialogSearchResult) result.get(a);
+                        long did = 0;
+                        if (obj.object instanceof TLRPC.User) {
+                            did = ((TLRPC.User) obj.object).id;
+                        } else if (obj.object instanceof TLRPC.Chat) {
+                            did = -((TLRPC.Chat) obj.object).id;
+                        }
+                        if (did == 0 || !org.telegram.ilgram.ILGRAMPolicy.canForwardTo(currentAccount, did)) {
+                            result.remove(a);
+                            a--;
+                        }
+                    }
+                }
                 if (becomeEmpty) {
                     topBeforeSwitch = getCurrentTop();
                 }
@@ -3452,6 +3468,9 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                         searchRunnable2 = null;
                         if (searchId != lastSearchId) {
                             return;
+                        }
+                        if (!org.telegram.ilgram.ILGRAMPolicy.isGlobalSearchEnabled()) {
+                            return; // ILGRAM: no server (global) search from the share sheet
                         }
                         searchAdapterHelper.queryServerSearch(query, true, true, true, true, false, 0, false, 0, searchId);
                     });

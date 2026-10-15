@@ -38,6 +38,8 @@ dependencies {
     androidTestImplementation "org.jetbrains.kotlin:kotlin-test:1.9.20"
     androidTestImplementation "org.jetbrains.kotlin:kotlin-test-junit:1.9.20"
     androidTestImplementation "com.appmattus.fixture:fixture:1.2.0"
+    // ILGRAM integration tests touch MessagesController's androidx collections; the classes come from the app at runtime
+    androidTestCompileOnly 'androidx.collection:collection:1.4.0'
 }
 
 android {

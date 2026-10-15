@@ -22,4 +22,12 @@ adb logcat -d > "$OUT/logcat.txt" 2>/dev/null || true
 adb shell ls "/sdcard/Android/data/$PKG/files/ilgram-screens" || true
 adb pull "/sdcard/Android/data/$PKG/files/ilgram-screens" "$OUT/screens" || true
 adb shell dumpsys activity top | head -40 > "$OUT/activity-top.txt" 2>/dev/null || true
+# Spec test 28: an in-place update (same signature, adb install -r) keeps the app's data / session files
+adb shell "run-as $PKG sh -c 'mkdir -p files && echo ilgram > files/ilgram_update_marker'" || true
+adb install -r -g "$APP" > "$OUT/reinstall.txt" 2>&1
+if adb shell "run-as $PKG cat files/ilgram_update_marker" 2>/dev/null | grep -q ilgram; then
+  echo "UPDATE_KEEPS_DATA: PASS" | tee -a "$OUT/instrument-summary.txt"
+else
+  echo "UPDATE_KEEPS_DATA: FAIL" | tee -a "$OUT/instrument-summary.txt"
+fi
 grep -q "^OK (" "$OUT/instrument-raw.txt"

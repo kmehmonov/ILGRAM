@@ -105,4 +105,42 @@ public class ILGRAMSmokeTest {
         }
         assertTrue(true);
     }
+
+    /** Spec test 26: losing the network must not crash the app. */
+    @Test
+    public void networkLoss_appStaysAlive() throws Exception {
+        Instrumentation inst = InstrumentationRegistry.getInstrumentation();
+        Context ctx = inst.getTargetContext();
+        Intent launch = new Intent(ctx, LaunchActivity.class);
+        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        ctx.startActivity(launch);
+        Thread.sleep(4000);
+        try {
+            shell("svc wifi disable");
+            shell("svc data disable");
+            shell("cmd connectivity airplane-mode enable");
+            Thread.sleep(6000);
+            screenshot("20-offline");
+            assertNotNull("app alive while offline", resumedActivity());
+        } finally {
+            shell("cmd connectivity airplane-mode disable");
+            shell("svc wifi enable");
+            shell("svc data enable");
+        }
+        Thread.sleep(5000);
+        screenshot("21-back-online");
+        assertNotNull("app alive after reconnect", resumedActivity());
+    }
+
+    private static void shell(String cmd) {
+        try {
+            android.os.ParcelFileDescriptor pfd = InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(cmd);
+            try (java.io.InputStream in = new android.os.ParcelFileDescriptor.AutoCloseInputStream(pfd)) {
+                byte[] buf = new byte[1024];
+                //noinspection StatementWithEmptyBody
+                while (in.read(buf) != -1) { }
+            }
+        } catch (Throwable ignore) {
+        }
+    }
 }
