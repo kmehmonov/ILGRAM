@@ -4608,6 +4608,11 @@ public class AndroidUtilities {
             if (data != null) {
                 final ProxySettings proxySettings = ProxySettings.fromUri(data);
                 if (proxySettings != null && proxySettings.isValid()) {
+                    if (org.telegram.ilgram.ILGRAMPolicy.isActive()) {
+                        // ILGRAM: proxy links are consumed without action
+                        if (invoked) org.telegram.ilgram.ILGRAMPolicy.showBlocked(activity);
+                        return true;
+                    }
                     if (invoked) showProxyAlert(activity, proxySettings);
                     return true;
                 }
